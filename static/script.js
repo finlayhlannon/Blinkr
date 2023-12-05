@@ -1,26 +1,20 @@
 // static/script.js
 
-// Sample data structure to store posts
-let posts = [];
-
 document.addEventListener("DOMContentLoaded", function () {
     updatePostContainer();
 });
 
-// Function to show the post creation modal
 function showPostForm() {
     const modal = document.getElementById("postModal");
     modal.style.display = "block";
 }
 
-// Function to close the post creation modal
 function closePostModal() {
     const modal = document.getElementById("postModal");
     modal.style.display = "none";
 }
 
-// Function to handle post submission
-function submitPost() {
+async function submitPost() {
     const imageInput = document.getElementById("imageInput");
     const captionInput = document.getElementById("captionInput");
 
@@ -28,8 +22,33 @@ function submitPost() {
     const caption = captionInput.value;
 
     if (caption.trim() !== "") {
-        const newPost = { id: posts.length + 1, imageUrl, caption };
+        const response = await fetch('posts.json');
+        const data = await response.json();
+        const posts = data.posts;
+
+        const newPost = {
+            id: posts.length + 1,
+            imageUrl: imageUrl,
+            caption: caption,
+            likes: 0,
+            dislikes: 0
+        };
+
         posts.unshift(newPost);
+
+        await fetch('https://api.github.com/repos/finlayhlannon/Blinkr/contents/posts.json', {
+            method: 'PUT',
+            headers: {
+                'Authorization': 'Bearer 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',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                message: 'Add new post',
+                content: btoa(JSON.stringify({ posts: posts })),
+                sha: data.sha,
+            }),
+        });
+
         updatePostContainer();
         closePostModal();
     } else {
@@ -37,33 +56,67 @@ function submitPost() {
     }
 }
 
-// Function to update the post container on the page
 function updatePostContainer() {
     const postContainer = document.getElementById("post-container");
-    // Clear existing posts
-    postContainer.innerHTML = "";
-    // Render the updated posts
-    posts.forEach(post => {
-        const postElement = document.createElement("div");
-        postElement.className = "post";
 
-        if (post.imageUrl) {
-            const imgElement = document.createElement("img");
-            imgElement.src = post.imageUrl;
-            imgElement.alt = "Post Image";
-            postElement.appendChild(imgElement);
-        }
+    fetch('posts.json')
+        .then(response => response.json())
+        .then(data => {
+            const posts = data.posts;
 
-        const captionElement = document.createElement("p");
-        captionElement.className = "post-caption";
-        captionElement.textContent = post.caption;
-        postElement.appendChild(captionElement);
+            postContainer.innerHTML = "";
 
-        postContainer.appendChild(postElement);
-    });
+            posts.forEach(post => {
+                const postElement = document.createElement("div");
+                postElement.className = "post";
+
+                if (post.imageUrl) {
+                    const imgElement = document.createElement("img");
+                    imgElement.src = post.imageUrl;
+                    imgElement.alt = "Post Image";
+                    postElement.appendChild(imgElement);
+                }
+
+                const captionElement = document.createElement("p");
+                captionElement.className = "post-caption";
+                captionElement.textContent = post.caption;
+                postElement.appendChild(captionElement);
+
+                const interactionButtonsElement = document.createElement("div");
+                interactionButtonsElement.className = "interaction-buttons";
+
+                const likeButtonElement = document.createElement("button");
+                likeButtonElement.className = "like-button";
+                likeButtonElement.textContent = "Like";
+                likeButtonElement.dataset.postId = post.id;
+                interactionButtonsElement.appendChild(likeButtonElement);
+
+                const likeCountElement = document.createElement("span");
+                likeCountElement.className = "like-count";
+                likeCountElement.textContent = post.likes;
+                interactionButtonsElement.appendChild(likeCountElement);
+
+                const dislikeButtonElement = document.createElement("button");
+                dislikeButtonElement.className = "dislike-button";
+                dislikeButtonElement.textContent = "Dislike";
+                dislikeButtonElement.dataset.postId = post.id;
+                interactionButtonsElement.appendChild(dislikeButtonElement);
+
+                const dislikeCountElement = document.createElement("span");
+                dislikeCountElement.className = "dislike-count";
+                dislikeCountElement.textContent = post.dislikes;
+                interactionButtonsElement.appendChild(dislikeCountElement);
+
+                postElement.appendChild(interactionButtonsElement);
+
+                postContainer.appendChild(postElement);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching or updating posts:', error);
+        });
 }
 
-// Close the modal if the user clicks outside of it
 window.onclick = function (event) {
     const modal = document.getElementById("postModal");
     if (event.target === modal) {

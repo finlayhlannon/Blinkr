@@ -38,8 +38,8 @@ header {
     background-color: #1e2432;
     border-radius: 8px;
     padding: 10px;
-    margin: 10px 0; /* Adjusted margin for spacing between posts */
-    width: 98%; /* Set width to 100% to ensure one post per row */
+    margin: 10px 0;
+    width: 98%;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 

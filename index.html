@@ -11,6 +11,11 @@
         <h1>Blinkr</h1>
         <button id="post-button" onclick="showPostForm()">Post</button>
     </header>
+
+    <div id="post-container">
+        <!-- Example Posts will be dynamically added here -->
+    </div>
+
     <div id="postModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closePostModal()">&times;</span>
@@ -25,10 +30,6 @@
                 <button type="button" onclick="submitPost()">Post</button>
             </form>
         </div>
-    </div>
-
-    <div id="post-container">
-        <!-- Example Posts will be dynamically added here -->
     </div>
 
     <script src="static/script.js"></script>
